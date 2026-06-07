@@ -1,0 +1,80 @@
+{% extends "admin.html" %}
+{% block content %}
+<h2 class="mb-4">Gestão de Denúncias</h2>
+<div class="card shadow">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Protocolo</th><th>Data</th><th>Tipo</th><th>Local</th><th>Status</th><th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in denuncias %}
+                <tr>
+                    <td><strong>{{ d.protocolo }}</strong></td>
+                    <td>{{ d.data_envio.split(' ')[0] }}</td>
+                    <td>{{ d.tipo }}</td>
+                    <td>{{ d.local }}</td>
+                    <td>
+                        <span class="badge {% if d.status == 'Nova' %}bg-warning{% elif d.status == 'Resolvida' %}bg-success{% elif d.status == 'Em análise' %}bg-info{% else %}bg-secondary{% endif %}">
+                            {{ d.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modal{{ d.id }}"><i class="bi bi-eye"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Modal de Detalhes -->
+                <div class="modal fade" id="modal{{ d.id }}" tabindex="-1">
+                  <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title">Denúncia: {{ d.protocolo }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                      </div>
+                      <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-6"><strong>Escola:</strong> {{ d.escola }}</div>
+                            <div class="col-6"><strong>Turma:</strong> {{ d.turma or 'Não informada' }}</div>
+                        </div>
+                        <p><strong>Descrição do Aluno:</strong><br><span class="text-muted">{{ d.descricao }}</span></p>
+                        
+                        {% if d.imagem %}
+                        <div class="mb-3">
+                            <strong>Anexo:</strong><br>
+                            <a href="/static/uploads/{{ d.imagem }}" target="_blank" class="btn btn-sm btn-outline-secondary">Ver Imagem Anexada</a>
+                        </div>
+                        {% endif %}
+                        
+                        <hr>
+                        <form action="/atualizar/{{ d.id }}" method="POST">
+                            <div class="mb-3">
+                                <label class="fw-bold">Atualizar Status</label>
+                                <select name="status" class="form-select">
+                                    <option {% if d.status == 'Nova' %}selected{% endif %}>Nova</option>
+                                    <option {% if d.status == 'Em análise' %}selected{% endif %}>Em análise</option>
+                                    <option {% if d.status == 'Resolvida' %}selected{% endif %}>Resolvida</option>
+                                    <option {% if d.status == 'Arquivada' %}selected{% endif %}>Arquivada</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="fw-bold">Adicionar Observação Interna</label>
+                                <textarea name="observacoes" class="form-control" rows="2" placeholder="Notas sobre a investigação..."></textarea>
+                                {% if d.observacoes %}
+                                <div class="mt-2 p-2 bg-light border rounded small" style="white-space: pre-wrap;">{{ d.observacoes }}</div>
+                                {% endif %}
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Salvar Alterações</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

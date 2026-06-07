@@ -1,0 +1,67 @@
+{% extends "admin.html" %}
+{% block content %}
+<h2 class="mb-4">Dashboard Estatístico</h2>
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white shadow h-100 py-2"><div class="card-body">
+            <div class="row no-gutters align-items-center">
+                <div class="col mr-2"><div class="text-xs font-weight-bold text-uppercase mb-1">Total Recebido</div><div class="h5 mb-0 font-weight-bold">{{ total }}</div></div>
+                <div class="col-auto"><i class="bi bi-folder2-open fa-2x text-gray-300"></i></div>
+            </div>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white shadow h-100 py-2"><div class="card-body">
+            <div class="row no-gutters align-items-center">
+                <div class="col mr-2"><div class="text-xs font-weight-bold text-uppercase mb-1">Novas</div><div class="h5 mb-0">{{ stats.get('Nova', 0) }}</div></div>
+            </div>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white shadow h-100 py-2"><div class="card-body">
+            <div class="row no-gutters align-items-center">
+                <div class="col mr-2"><div class="text-xs font-weight-bold text-uppercase mb-1">Em Análise</div><div class="h5 mb-0">{{ stats.get('Em análise', 0) }}</div></div>
+            </div>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white shadow h-100 py-2"><div class="card-body">
+            <div class="row no-gutters align-items-center">
+                <div class="col mr-2"><div class="text-xs font-weight-bold text-uppercase mb-1">Resolvidas</div><div class="h5 mb-0">{{ stats.get('Resolvida', 0) }}</div></div>
+            </div>
+        </div></div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Relatórios e Exportação</h6>
+                <div>
+                    <a href="/exportar/pdf" class="btn btn-sm btn-danger"><i class="bi bi-file-pdf"></i> PDF</a>
+                    <a href="/exportar/excel" class="btn btn-sm btn-success"><i class="bi bi-file-excel"></i> Excel</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="graficoTipos" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var ctx = document.getElementById('graficoTipos').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ tipos.keys() | list | safe }},
+            datasets: [{
+                label: 'Ocorrências por Tipo',
+                data: {{ tipos.values() | list | safe }},
+                backgroundColor: '#0d6efd'
+            }]
+        }
+    });
+</script>
+{% endblock %}
