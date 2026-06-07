@@ -69,7 +69,7 @@ def login():
         flash('Credenciais inválidas.', 'error')
     return render_template('admin.html', login_page=True)
 
-@@app.route('/dashboard')
+@app.route('/dashboard')
 @admin_required
 def dashboard():
     conn = get_db()
