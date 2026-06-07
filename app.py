@@ -188,6 +188,10 @@ def exportar(formato):
         pdf.output(pdf_output)
         return send_file(pdf_output, as_attachment=True)
 
+@app.route('/verificar-sessao')
+def verificar_sessao():
+    return f"Sessão atual: {session.get('admin')}"
+
 @app.route('/reset-admin-direto')
 def reset_admin_direto():
     from werkzeug.security import generate_password_hash
