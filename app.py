@@ -69,13 +69,20 @@ def login():
         flash('Credenciais inválidas.', 'error')
     return render_template('admin.html', login_page=True)
 
-@app.route('/dashboard')
+@@app.route('/dashboard')
 @admin_required
 def dashboard():
     conn = get_db()
+    # Busca o total
     total = conn.execute("SELECT COUNT(*) FROM denuncias").fetchone()[0]
+    # Busca os status para preencher o gráfico/contagem
+    status_raw = conn.execute("SELECT status, COUNT(*) FROM denuncias GROUP BY status").fetchall()
     conn.close()
-    return render_template('dashboard.html', total=total)
+    
+    # Cria o dicionário que o dashboard.html está esperando
+    stats = {row[0]: row[1] for row in status_raw}
+    
+    return render_template('dashboard.html', total=total, stats=stats)
 
 @app.route('/denuncias')
 @admin_required
