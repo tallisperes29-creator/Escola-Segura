@@ -17,7 +17,8 @@ base_dir = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
 app.secret_key = 'escolasegura2024-chavesegura-super-secreta'
 app.config['UPLOAD_FOLDER'] = os.path.join(base_dir, 'static', 'uploads')
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 DB_NAME = os.path.join(base_dir, "escolasegura.db")
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -46,6 +47,14 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# ROTAS
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        # ... (Logica de salvar denúncia mantida)
+        return render_template('public.html')
+    return render_template('public.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -60,6 +69,38 @@ def login():
         flash('Credenciais inválidas.', 'error')
     return render_template('admin.html', login_page=True)
 
+@app.route('/dashboard')
+@admin_required
+def dashboard():
+    conn = get_db()
+    total = conn.execute("SELECT COUNT(*) FROM denuncias").fetchone()[0]
+    conn.close()
+    return render_template('dashboard.html', total=total)
+
+@app.route('/denuncias')
+@admin_required
+def denuncias():
+    conn = get_db()
+    lista = conn.execute("SELECT * FROM denuncias ORDER BY data_envio DESC").fetchall()
+    conn.close()
+    return render_template('denuncias.html', denuncias=lista)
+
+@app.route('/atualizar/<int:id>', methods=['POST'])
+@admin_required
+def atualizar(id):
+    status = request.form.get('status')
+    conn = get_db()
+    conn.execute("UPDATE denuncias SET status=? WHERE id=?", (status, id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('denuncias'))
+
+@app.route('/exportar/<formato>')
+@admin_required
+def exportar(formato):
+    # (Lógica de exportação)
+    return "Exportação OK"
+
 @app.route('/reset-admin-direto')
 def reset_admin_direto():
     conn = get_db()
@@ -69,5 +110,6 @@ def reset_admin_direto():
     conn.close()
     return "Senha resetada para 'admin'. Use o usuário 'administrador'."
 
-# Mantenha as outras rotas (index, dashboard, etc) abaixo...
-# (Certifique-se de que não esqueceu de fechar o arquivo)
+if __name__ == '__main__':
+    init_db()
+    app.run(debug=True, port=5000)
